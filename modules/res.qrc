@@ -1,0 +1,15 @@
+<RCC>
+  <qresource prefix="新前缀">
+    <file>../icons/apple.png</file>
+    <file>../icons/bilibili.png</file>
+    <file>../icons/close.png</file>
+    <file>../icons/csdn.png</file>
+    <file>../icons/eye.png</file>
+    <file>../icons/login.png</file>
+    <file>../icons/logout.png</file>
+    <file>../icons/logout_2.png</file>
+    <file>../icons/minize.png</file>
+    <file>../icons/register.png</file>
+    <file>../icons/tecent video.png</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,1785 @@
+﻿syntax = "proto3";
+package usr;
+import "google/protobuf/any.proto";
+
+/*
+系统中 请求、应答、通知都使用 CommonMsg 为主要结构
+各个字段根据不同指令区分实际意义
+*/
+message CommonMsg
+{
+    int32    iId              = 1;
+    int32    iParam           = 2;
+    int32    ret              = 3;
+    uint32   uId              = 4;
+    uint32   uParam           = 5;
+    string   sId              = 6;
+    string   sParam           = 7;
+    string   session          = 8;
+    bool     bParam           = 9;
+    google.protobuf.Any  data = 10; //数据
+    repeated google.protobuf.Any  paramList = 11; //列表参数数据
+}
+
+//enum DvsType
+//{
+//    DvsType_DVS_ROBOT                            = 0; //Robot
+//    DvsType_DVS_CLIENT                           = 1; //Client
+//    DvsType_MEDIA_PRODUCER                       = 2; //媒体生产者
+//    DvsType_MEDIA_CONSUMER                       = 3; //媒体消费者
+//    DvsType_S2E_PROXY                            = 4; //路基转换器代理
+//    DvsType_DVS_IVAS                             = 10; //图片分析
+//    DvsType_DVS_SERVER                           = 11; //服务器
+//    DvsType_DVS_SDK                              = 12; //sdk
+//}
+///***** 登录信息 *****/
+//message LoginInfo
+//{
+//    string           user                        = 1; //用户账号
+//    string           pwd                         = 2; //密码
+//    string           id                          = 3; //设备ID，设备类型为机器人时有效
+//    DvsType          type                        = 4; //设备类型，见TeDvsType
+//    uint32           timeout                     = 5; //会话超时时间，单位豪秒，取值，默认5000毫秒
+//}
+
+/***** 查询条件 *****/
+message QueryCondition
+{
+    int32            queryType  = 1; //查询类型
+    int32            queryPos   = 2; //查询下标
+    int32            queryNum   = 3; //指定查询记录数的个数
+    bool             queryTotal = 4; //是否查询总数，（多页查询时避免每个页面都查询总数）
+    int32            intId      = 5; //整形 id
+	repeated int32   intParams  = 6; //整形查询参数
+    uint64           beginTime  = 7; //开始时间
+    uint64           endTime    = 8; //结束时间
+	string           strID      = 9; //字符串 id
+	repeated string  strParams  = 10; //字符串查询参数
+    uint32           uintId      = 11; //整形 id
+	repeated uint32  uintParams  = 12; //整形查询参数
+}
+
+message QueryResult
+{
+    uint32         			      beginPos = 1; //开始位置
+    uint32         			      totalNum = 2; //总记录数
+	repeated google.protobuf.Any  results  = 3; //数据列表
+    uint64                        i64Param = 4; //64位整形参数
+}
+
+/************************************************/
+/*
+    以下几个结构是因 Any 字段不能封装 map 而定义的通用结构
+*/
+message StringInt
+{
+    string  key    = 1;
+    int32   value  = 2;
+}
+message IntInt
+{
+    int32  key    = 1;
+    int32  value  = 2;
+}
+message Int64Int
+{
+    sint64  key    = 1;
+    int32   value  = 2;
+}
+message IntArray
+{
+    repeated int32 ints = 1;
+}
+message UintArray
+{
+    repeated uint32  uints = 1;
+}
+/************************************************/
+
+/***** 角色信息 *****/
+message RoleInfo
+{
+    uint32               id                      = 1; //角色ID
+    string               name                    = 2; //角色名称
+}
+/***** 角色信息查询结果 *****/
+message RoleInfoQueryResult
+{
+    uint32               pos                     = 1; //开始位置
+    uint32               total                   = 2; //总条数
+    repeated RoleInfo    infos                   = 3;
+}
+enum Module
+{
+option allow_alias                               = true;
+    Module_IDLE                                  = 0; //模块开始
+    Module_MIN_NO                                = 1; //模块开始
+    Module_RT_INFO                               = 1; //实时界面->实时信息查询
+    Module_RT_LIVE_PRIVIEW                       = 2; //实时界面->实时视频控制
+    Module_RT_ROBOT_CTRL                         = 3; //实时界面->机器人控制
+    Module_RT_MOUNT_CTRL                         = 4; //实时界面->挂载设备控制
+    Module_RT_ROADBASE_CTRL                      = 5; //实时界面->路基控制
+    Module_DATA_ALARM                            = 6; //数据报表界面->报警信息查询
+    Module_DATA_TOUR_REPORT                      = 7; //数据报表界面->巡检报告查询
+    Module_SYS_TOUR                              = 8; //系统配置->巡检配置
+    Module_SYS_ROADBASE                          = 9; //系统配置->路基配置
+    Module_SYS_ALARM                             = 10; //系统配置->告警配置
+    Module_SYS_USER                              = 11; //系统配置->用户管理
+    Module_SYS_ROLE                              = 12; //系统配置->角色管理
+    Module_MAX_NO                                = 12; //模块最大值
+}
+/***** 模块权限 *****/
+message ModulePrivilege
+{
+    Module       module                          = 1; //模块ID，见 TeModule
+    uint32       privilege                       = 2; //模块权限
+}
+/***** 角色权限 *****/
+message RolePrivilege
+{
+    uint32                    id                 = 1; //角色ID
+    repeated ModulePrivilege  privileges         = 2; //角色模块权限
+}
+/***** 用户信息 *****/
+message UserInfo
+{
+    string       id                              = 1; //用户账号
+    string       name                            = 2; //用户名称
+    string       pwd                             = 3; //用户密码
+    uint32       role                            = 4; //用户ID
+    string       department                      = 5; //用户部门
+    string       position                        = 6; //用户职务
+    string       mobile                          = 7; //用户电话
+}
+/***** 用户信息查询结果 *****/
+message UserInfoQueryResult
+{
+    uint32             pos                       = 1; //开始位置
+    uint32             total                     = 2; //总条数
+    repeated UserInfo  infos                     = 3;
+}
+/***** 音频支持类型 *****/
+enum AudioSupported
+{
+    NO_AUDIO                                    = 0; //不支持音频
+    AUDIO                                       = 1; //单向音频
+    TALKBACK                                    = 2; //对讲
+}
+/***** 摄像机信息 *****/
+message IPCameraInfo
+{
+    uint32          channel                      = 1; //通道ID
+    string          type                         = 2; //设备类型
+    string          name                         = 3; //通道名称
+    string          ip                           = 4; //设备IP
+    uint32          port                         = 5; //设备端口
+    string          user                         = 6; //用户账号
+    string          pwd                          = 7; //密码
+    AudioSupported  audio                        = 8; //是否支持音频 =;见TeAudioSupported
+}
+/***** 摄像机摘要信息 *****/
+message IPCSummaryInfo
+{
+    uint32        channel                        = 1; //通道ID
+    string        name                           = 2; //通道名称
+    sint32        audio                          = 3; //是否支持音频 =;见TeAudioSupported
+}
+/***** 媒体通道信息 *****/
+message MediaChannelInfo
+{
+    string                 robot                 = 1; //机器人ID
+    repeated IPCameraInfo  infos                 = 2; //机器人信息列表
+}
+/***** 媒体通道摘要信息 *****/
+message MediaSummaryInfo
+{
+    string                   robot               = 1; //机器人ID
+    repeated IPCSummaryInfo  infos               = 2; //机器人信息列表
+}
+/***** 摄像机信息 *****/
+message IpcInfo
+{
+    uint32         id          = 1; //通道ID
+    string         type        = 2; //设备类型
+    string         ip          = 3; //设备IP
+    uint32         port        = 4; //设备端口
+    string         user        = 5; //用户账号
+    string         pwd         = 6; //密码
+    string      uri            = 7; //rtsp拉流地址
+    string      snapshot       = 8; //http抓拍地址
+}
+/***** 媒体通道信息 *****/
+message ChannelInfo
+{
+    uint32            id                = 1; //机器人ID
+    string            name              = 2; //通道名称
+    uint32            ipc               = 3; //通道对应的的IPC的ID
+    AudioSupported    audio             = 4; //是否支持音频 =;见AudioSupported
+    uint32            streamType        = 5; //使用的流类型，0 - MainStream =; 1 - SubStream
+    uint32            mainStreamID      = 6; //主码流ID
+    uint32            subStreamID       = 7; //字码流ID
+}
+/***** 媒体通道信息 *****/
+message ChannelSummaryInfo
+{
+    uint32            channel                    = 1; //机器人ID
+    string            name                       = 2; //通道名称
+    AudioSupported    audio                      = 3; //是否支持音频 =;见TeAudioSupported
+}
+/***** 媒体通道信息 *****/
+message RobotMediaInfo
+{
+    string                robot                  = 1; //机器人ID
+    repeated ChannelInfo  channels               = 2; //通道信息列表
+    repeated IpcInfo      ipcs                   = 3; //IPC信息列表
+}
+
+/***** 通道流媒体信息(对外) *****/
+message ChannelUrl
+{
+	uint32  channel  = 1; //通道ID
+	string  url      = 2; //实时流地址
+	string  snapshot = 3; //抓拍地址
+	string  user     = 4; //用户
+	string  pwd      = 5; //密码
+}
+
+/***** 流媒体地址(对外) *****/
+message RobotMediaUrl
+{
+	string robot                  = 1; //机器人ID
+	map<uint32, ChannelUrl> media = 2; //通道流媒体URL
+}
+
+
+/***** 机器人信息(需保留) *****/
+message RobotInfo
+{
+    string           robot                       = 1; //机器人ID
+    string           name                        = 2; //机器人名称
+    string           type                        = 3; //机器人类型
+	int32			 status                      = 4; //机器人状态
+	RobotAbility	 ability                     = 5; //机器人能力
+}
+
+message LampAbility
+{
+    int32             id      = 1; //灯ID
+    string            name    = 2; //名称
+    int32             minGear = 3; //0   最小档位
+    int32             maxGear = 4; //99  最大档位
+}
+
+message PtzAbility
+{
+    int32           supportedAngle = 1; //0 - 只支持预置位   1 - 支持角度变倍
+    int32           directionNum   = 2; //4 - 上下左右   5 - 上下左右+复位   9 - 复位 + 8向
+    bool            brush          = 3; //是否支持雨刷
+    bool            lamp           = 4; //是否支持灯光
+    uint32          maxZoom        = 5; //最大变倍
+    int32           minHAngle      = 6; //最小水平角度
+    int32           maxHAngle      = 7; //最大水平角度
+    int32           minVAngle      = 8; //最小垂直角度
+    int32           maxVAngle      = 9; //最大垂直角度
+}
+
+message SamplingAbility
+{
+    uint32 channel          = 1; //采样通道
+    string name             = 2; //通道名称
+    bool   supportedPtz     = 3; //是否支持云台
+    bool   supportedLift    = 4; //是否支持升降
+    bool   supportedThermal = 5; //是否支持热成像
+}
+
+message RobotAbility
+{
+    string                   robot             = 1;  //机器人ID
+    uint32                   cameraNum         = 2;  //摄像机个数
+    bool                     supportedThermal  = 3;  //是否支持热成像
+    int32                    sensorType        = 4 [deprecated = true];  //气体传感器类型
+    int32                    maxLift           = 5;  //0 - 不支持升降架 mm
+    int32                    mountType         = 6;  //0 - 机械臂、1 - 云台
+    uint32                   ctrlPtzNum        = 7;  //0 - 无、1 - 单/双视云台、2 - 左右云台
+    PtzAbility               ptzAbility        = 8;  //云台能力
+    uint32                   lampNum           = 9;  //灯光个数
+    repeated LampAbility     lampAbilities     = 10; //灯光配置
+    repeated SensorItem      sensors           = 11; //支持的传感器
+    string                   type              = 12; //机器人类型
+    repeated SamplingAbility samplingAbilities = 13; //采样通道
+	bool                     isUnhook          = 14; //机器人是否支持脱钩
+}
+
+/***** 数据源信息 *****/
+message MediaSourceID
+{
+    string        robot                          = 1;
+    uint32        channel                        = 2;
+    uint32        stream                         = 3;
+}
+/***** 数据包类型 *****/
+enum PacketPayloadType
+{
+    PacketPayload_CMD                            = 0; //命令
+    PacketPayload_MEDIA                          = 1; //媒体数据
+    PacketPayload_FILE                           = 2; //文件
+}
+/***** 流数据类型 *****/
+enum StreamType
+{
+    StreamType_UNKNOWN                           = 0; //未知类型
+    StreamType_VIDEO                             = 1; //视频流
+    StreamType_AUDIO                             = 2; //音频流
+}
+/***** 流编码类型 *****/
+enum EncodingType
+{
+    EncodingType_UNKNOWN                         = 0; //未知类型
+    EncodingType_H264                            = 1; //视频H264编码
+    EncodingType_H265                            = 2; //视频H265编码
+    EncodingType_G711                            = 10; //音频G711编码
+}
+/***** 帧类型 *****/
+enum FrameType
+{
+    FrameType_UNKNOWN                            = 0; //未知类型
+    FrameType_I                                  = 1; //I帧
+    FrameType_P                                  = 2; //P帧
+}
+/***** 视频制式 *****/
+enum VideoFormat
+{
+    VideoFormat_UNKNOWN                          = 0; //未知类型
+    VideoFormat_NTSC                             = 1; //N制
+    VideoFormat_PAL                              = 2; //P制
+}
+/***** 视频数据头 *****/
+message MediaFrameHead
+{
+    string           robot                       = 1; //设备ID
+    uint32           channel                     = 2; //视频通道号
+    uint32           stream                      = 3; //流编号
+    StreamType       streamType                  = 4; //流类型，StreamType
+    EncodingType     encoding                    = 5; //编码格式,EncodingType
+    uint32           seq                         = 6; //数据帧序号
+    FrameType        frame                       = 7; //数据帧类型,FrameType
+    uint32           rate                        = 8; //帧率
+    uint32           bit                         = 9; //当前码率　
+    uint32           width                       = 10; //视频宽度
+    uint32           height                      = 11; //视频高度
+    VideoFormat      format                      = 12; //当前视频制式,VideoFormat
+    uint64           timestamp                   = 13; //数据采集时间戳，单位为毫秒
+    uint32           length                      = 14; //数据有效长度
+    /*
+    int timezone                                 = 15; //时区
+    int daylight                                 = 16; //夏令时
+    */
+}
+/***** 视频帧 *****/
+/* 区域 */
+message  Rect
+{
+    int32  topX     = 1; //对象区域左上x
+    int32  topY     = 2; //对象区域左上Y
+    int32  bottomX  = 3; //对象区域右下x
+    int32  bottomY  = 4; //对象区域右下y
+}
+
+/*
+message MediaFrame
+{
+    MediaFrameHead    head                       = 1;
+    char*             data                       = 2; //数据
+    uint32            size                       = 3; //当前缓冲长度
+}
+*/
+/***** 流媒体自定义数据帧 *****/
+message CustomFrame
+{
+    repeated Rect   areas = 1;
+}
+/***** 存储类型 *****/
+enum StorageType
+{
+    StorageType_RECORD                           = 0; //录像存储
+    StorageType_SNAPSHOT                         = 1; //抓拍存储
+}
+/***** 回放控制类型 *****/
+enum RetrievalCtrlType
+{
+    RetrievalCtrl_NEXT_FRAME                     = 0; //下一帧，对应操作：正常播放、慢播、单帧
+    RetrievalCtrl_NEXT_I_FRAME                   = 1; //下一个I帧，对应操作：快进
+    RetrievalCtrl_PREVIOUS_I_FRAME               = 2; //上一个I帧，对应操作：快退
+    RetrievalCtrl_LOCATE                         = 3; //定位，对应操作：定位时间点
+    RetrievalCtrl_PAUSE                          = 4; //暂停，对应操作：暂停
+}
+/***** 抓拍控制 *****/
+enum SnapshotCtrlType
+{
+    SnapshotCtrl_START                           = 0; //开始抓拍
+    SnapshotCtrl_STOP                            =1; //停止抓拍
+}
+           //媒体SDK类型
+enum MediaSdkType
+{
+    MediaSdkType_LIVE_PREVIEW                    = 0; //实时预览
+    MediaSdkType_RETRIEVAL                       =1; //录像取回
+}
+/***** 通道录像策略 *****/
+message ChannelRecordPolicy
+{
+    uint32        channel                        = 1; //通道ID
+    uint32        stream                         = 2; //通道ID
+    bool          enable                         = 3; //使能
+}
+/***** 机器人录像策略 *****/
+message RecordPolicy
+{
+    string                          robot        = 1; //机器人ID
+    repeated ChannelRecordPolicy    policies     = 2;
+}
+/***** 机器人录像日历 *****/
+message RecordCalendar
+{
+    string            robot                      = 1; //机器人ID
+    uint32            yearMonth                  = 2;
+    uint32            calendar                   = 3;
+}
+/***** 存储查询条件 *****/
+message StorageQueryCondition
+{
+    string           robot                       = 1; //机器人ID
+    uint32           channel                     = 2;
+    StorageType      storage                     = 3; //存储类型，参见StorageType
+    uint64           begin                       = 4; //单位：毫秒
+    uint64           end                         = 5; //单位：毫秒
+}
+/***** 录像片段 *****/
+message RecordSlip
+{
+    uint64            begin                      = 1;
+    uint64            end                        = 2;
+}
+/***** 存储查询结果 *****/
+message StorageQueryResult
+{
+    string               robot                   = 1; //机器人ID
+    uint32               channel                 = 2; //通道ID
+    uint32               total                   = 3; //查询总分片个数
+    repeated RecordSlip  slips                   = 4; //录像、抓拍数据分片
+}
+/***** 存储数据回放条件 *****/
+message RetrievalInfo
+{
+    string                   robot               = 1; //机器人ID
+    uint32                   channel             = 2; //通道ID
+    StorageType              storage             = 3; //存储类型，参见：StorageType
+    uint64                   begin               = 4; //开始时间，单位：毫秒(为兼容抓拍时间)
+    uint64                   end                 = 5; //结束时间，单位：毫秒
+}
+message ChannelLocateTimestamp
+{
+    uint32           channel                     = 1; //通道ID
+    sint64           timestamp                   = 2;
+}
+/***** 机器人回放定位时间 *****/
+message RetrievalLocateTime
+{
+    string                            robot      = 1; //机器人ID
+    repeated ChannelLocateTimestamp   timestamps = 2;
+}
+/***** 回放控制类型 *****/
+enum PlaybackCtrlType
+{
+    PlaybackCtrl_STOP                            = 0; //停止回放
+    PlaybackCtrl_START                           = 1; //开始回放
+    PlaybackCtrl_SPEED_CHANGE                    = 2; //调速，指定回放速度
+    PlaybackCtrl_LOCATE                          = 3; //调速，指定回放速度
+}
+ /* 需保留 */
+message PlaybackCtrl
+{
+    string    url                                = 1; //回放url, nPlaybackCtrl 不为 ENM_PLAYBACK_START 时必填
+    string    robot                              = 2; //机器人ID
+    uint32    channel                            = 3; //通道ID
+    uint32    ctrl                               = 4; //回放控制类型，参见：TePlaybackCtrlType
+    uint32    speed                              = 5; //回放速度, 值 x 100, 示例：50 表示0.5倍速度回放，100 表示正常1倍速回放, 150 表示1.5倍速度回放
+    uint64    begin                              = 6; //开始时间，单位：毫秒(为兼容抓拍时间)
+    uint64    end                                = 7; //结束时间，单位：毫秒
+    uint64    locate                             = 8; //定位时间，nPlaybackCtrl为ENM_PLAYBACK_LOCATE时有效，取值,单位:毫秒
+}
+/***** 抓拍类型 *****/
+enum SnapshotType
+{
+    SnapshotType_MANUAL                          = 0; //手动抓拍
+    SnapshotType_SCHEDULE                        = 1; //计划抓拍
+}
+/***** 抓拍任务 *****/
+message SnapshotTask
+{
+    uint32        type                           = 1; //抓拍类型，0 手动抓拍，1 计划抓拍
+    uint32        times                          = 2; //抓拍次数
+    uint32        interval                       = 3; //抓拍间隔，单位:秒
+}
+/***** 磁盘使用情况 *****/
+message DiskState
+{
+    string            name                       = 1; //磁盘名称,不含/dev，如sdb
+    uint64            total                      = 2; //总空间
+    uint64            remain                     = 3; //可用空间
+}
+/***** 磁盘使用概览 *****/
+message DiskOverview
+{
+    repeated DiskState   staties                 = 1;
+}
+/***** 升级状态 *****/
+message DvsUpgradeStatus
+{
+    int32         status                         = 1; //升级状态
+    uint32        length                         = 2; //已接收的数据长度，字节
+    uint32        total                          = 3; //数据总长，字节
+}
+/***** 机器人运动控制参数 *****/
+message RobotMotion
+{
+    string               robot                   = 1; //机器人ID
+    sint32               speed                   = 2; //机器人运行速度，单位：毫米每秒，取值。符号表示方向，> 0 表示前进，= 0 表示停止，< 0 表示后退；速度值越大，车速越快
+}
+/***** 机器人压力轮参数 *****/
+message RobotPressure
+{
+    string        robot                          = 1; //机器人ID
+    uint32        pressure                       = 2; //压力值，取值
+}
+/***** 灯光参数 *****/
+message LampParam
+{
+    uint32       id                              = 1; //灯编号
+    uint32       lamp                            = 2; //灯光亮度，取值
+}
+/***** 机器人灯光控制参数 *****/
+message RobotLamp
+{
+    string            robot                      = 1; //机器人ID
+    LampParam         lamp                       = 2; //灯光参数
+}
+/***** 机器人灯光状态参数 *****/
+message RobotLampStatus
+{
+    string               robot                   = 1; //机器人ID
+    repeated LampParam   lamps                   = 2; //灯光参数
+}
+/***** 机器人避障参数 *****/
+message RobotAvoidObstacle
+{
+    string              robot                    = 1; //机器人ID
+    uint32              switch                   = 2; //避障开关，0 表示关，非 0 表示开
+}
+/***** 机器人驻车控制 *****/
+message RobotParking
+{
+    string       robot                           = 1; //机器人ID
+    uint32       parking                         = 2; //驻车标识，取值。1 表示驻车， 0 表示未驻车
+}
+/***** 机器人位置 *****/
+message RobotLocation
+{
+    string               robot                   = 1; //机器人ID
+    sint32               location                = 2; //位置，单位：毫米
+}
+
+enum RobotArmCmdType
+{
+    RobotArmCmd_MOVE_REL_J                       = 0;
+    RobotArmCmd_MOVE_J                           = 1;
+    RobotArmCmd_PICKUP                           = 2; //机械臂收起
+    RobotArmCmd_POWER_ON                         = 3; //使能
+    RobotArmCmd_POWER_OFF                        = 4; //去使能
+    RobotArmCmd_TEACH_ON                         = 5; //开启零力示教
+    RobotArmCmd_TEACH_OFF                        = 6; //关闭零力示教
+    RobotArmCmd_START_MASTER                     = 7; //启动主站
+    RobotArmCmd_CLOSE_MASTER                     = 8; //关闭主站
+    RobotArmCmd_SET_SPEED                        = 9; //设置机械臂运动速度
+    RobotArmCmd_MOVE_STOP                        = 10; //运动停止
+    RobotArmCmd_MOVE_FRONT                       = 11; //向前运动
+    RobotArmCmd_MOVE_BACK                        = 12; //向后运动
+    RobotArmCmd_MOVE_LEFT                        = 13; //向左运动
+    RobotArmCmd_MOVE_RIGHT                       = 14; //向右运动
+    RobotArmCmd_MOVE_UP                          = 15; //向上运动
+    RobotArmCmd_MOVE_DOWN                        = 16; //向下运动
+}
+/***** 机械臂控制命令 *****/
+message RobotArmCtrl
+{
+    string               robot                   = 1; //机器人ID
+    RobotArmCmdType      cmd                     = 2; //RobotArmCmdType
+    sint32               speed                   = 3; //armCtrlCmd 为 SET_SPEED 时使用，范围
+    sint32               armParam                = 4; //armCtrlCmd 为 MOVE_REL_J 时使用，范围
+    sint32               step                    = 5; //配合 armID 使用,范围
+    RobotPtz             angle                   = 6; //armCtrlCmd 为 MOVE_J 时使用
+}
+enum MountDvsType
+{
+    MountDvs_IDLE                                = 0; //
+    MountDvs_SENSOR                              = 1; //传感器数据采集
+    MountDvs_ARM                                 = 2; //机械臂
+    MountDvs_LIFT_PTZ                            = 3; //升降云台，含普通云台
+    MountDvs_LR_PTZ                              = 4; //左右云台
+}
+
+/***** 抓拍位置 *****/
+message SnapshotPosition
+{
+    uint32            ptz                        = 1; //云台ID
+    bool              enable                     = 2; //抓拍使能标记
+    RobotPtz	      angle                      = 3; //机械臂、云台角度等
+    uint32            zoom                       = 4; //镜头变倍，0 无意义，大于0 表示镜头倍数
+    bool              thermal                    = 5; //采集热成像最高温的标记
+}
+
+/***** 管廊信息 *****/
+message PipeGallery
+{
+    uint32     gallery                           = 1; //管廊ID
+    string     name                              = 2; //管廊名称
+    uint32     length                            = 3; //管廊长度
+    bool       circle                            = 4; //是否环形轨道
+}
+/***** 管廊信息查询结果 *****/
+message PipeGalleryQueryResult
+{
+    uint32                    pos                = 1; //开始位置
+    uint32                    total              = 2; //总条数
+    repeated PipeGallery      galleries          = 3;
+}
+
+/***** 云台角度 *****/
+message RobotPtz
+{
+    float        zoom = 1; //变倍
+    float        arm1 = 2; //机械臂转动角度，取值[-180, 180],云台水平角度
+    float        arm2 = 3; //云台垂直角度
+    float        arm3 = 4; //升降架高度
+    float        arm4 = 5;
+    float        arm5 = 6;
+    float        arm6 = 7;
+}
+
+/***** 动作类型 *****/
+enum TourActionType
+{
+	TourAction_IDLE                              = 0; //
+    TourAction_SENSOR                            = 1; //气体传感器采集
+    TourAction_SNAPSHOT                          = 2; //抓拍
+}
+
+/***** 站点动作 *****/
+message TourAction
+{
+	uint32				 id					     = 1; //动作ID
+	TourActionType		 type					 = 2; //动作类型{气体、抓拍、录像}
+	uint32				 channel				 = 3; //数据采集通道
+	uint32				 ready					 = 4; //准备时间，秒
+	uint32				 times					 = 5; //抓拍次数
+	uint32				 interval				 = 6; //抓拍间隔
+	RobotPtz			 ptz					 = 7; //云台角度
+	bool                 thermal                 = 8; //采集热成像
+	repeated TourObject  objects                 = 9; //巡检对象
+}
+
+/***** 机器人巡检站点 *****/
+message TourStation
+{
+    uint32                station                = 1; //巡检站点ID
+    string                name                   = 2; //站点名称
+    uint32                gallery                = 3; //巡检点所在的管廊ID
+    sint32                beginLocation          = 4; //开始位置，单位：毫米
+    sint32                endLocation            = 5; //结束位置，单位：毫米
+    uint32                speed                  = 6; //站点运行速度
+    string                area                   = 7; //区域
+    uint32                frequency              = 8; //巡检频率
+    repeated TourAction   actions                = 9; //站点动作列表
+	string				  robotType              = 10;//机器人类型
+}
+
+message SamplingAnalysis
+{
+    repeated string samplings                    = 1;  //采样图片列表
+    repeated TourObject objects                  = 2;    //识别对象列表
+}
+
+/***** 结果判定类型 *****/
+enum DetermineType
+{
+	IDLE     = 0; //未配置
+	ByType   = 1; //根据类型判定
+	ByObject = 2; //根据对象判定
+	ByConfig = 3; //根据配置模板
+}
+
+/***** 巡检对象 *****/
+message TourObject
+{
+	uint32				type			  = 1; //对象类型
+	string				name			  = 2; //对象名称
+	uint32				frequency		  = 5; //巡检频率
+	Rect				rect			  = 6; //图像区域
+	DetermineType		determine	      = 7; //结果判定方式
+}
+
+/***** 结果类型 *****/
+enum ValueType
+{
+	numerical = 0; //数值
+	text      = 1; //文本
+}
+
+/***** 判别方式 *****/
+enum CompareType
+{
+	EQUAL = 0; //等于
+	GE    = 1; //大于等于 great than or equal
+	LE    = 2; //小于等于 less than or equal
+}
+
+/***** 区间信息 *****/
+message GalleryRangeInfo
+{
+	repeated IntInt	locationRange = 1; //区间段
+	repeated IntInt timeRange     = 2; //时间段
+}
+
+/***** 告警项信息 *****/
+message AlarmItem
+{
+	uint32      level			  = 1; //告警级别
+	string      name			  = 2; //级别名称
+	ValueType   valueType		  = 3; //值类型
+	CompareType compareType		  = 4; //判别方式
+	float       value			  = 5; //告警阈值
+	string      text			  = 6; //文本告警
+}
+
+/***** 告警策略 *****/
+message AlarmPolicy
+{
+	map<uint32, GalleryRangeInfo> galleryMap = 1; //<管线ID，GalleryRangeInfo>
+	map<uint32, AlarmItem>        itemMap    = 2; //<告警级别，AlarmItem>
+}
+
+/***** 对象分析 *****/
+message ObjectAnalysis
+{
+	uint32               objectType   = 1; //对象类型
+	string               objectName   = 2; //对象名称
+	ValueType            valueType    = 3; //结果类型
+	uint32				 interval     = 4; //间隔时间,单位秒
+	bool	             enable       = 5; //是否使能
+	repeated AlarmPolicy policies     = 6; //告警配置
+	map<string, AlarmPolicy> subPolicies = 7; //子项告警配置
+}
+
+/***** 告警策略配置 *****/
+message AlarmPolicyConfig
+{
+	repeated ObjectAnalysis sameLevels	= 1;		//统一级别的告警
+	repeated ObjectAnalysis singles		= 2;		//单独配告警策略
+}
+
+/***** 机器人巡检线路 *****/
+message TourLine
+{
+    uint32            id                         = 1; //巡检线路ID;
+    string            name                       = 2; //线路名称
+    repeated uint32   stations                   = 3; //巡检站点ID列表
+}
+/***** 巡检线路查询结果 *****/
+message TourLineQueryResult
+{
+    uint32              pos                      = 1; //开始位置 仅列表查询时有效
+    uint32              total                    = 2; //总条数
+    repeated TourLine   lines                    = 3;
+}
+enum WeekDay
+{
+    SUNDAY                                       = 0; //星期天, linux时间从0开始
+    MONDAY                                       = 1; //星期一
+    TUESDAY                                      = 2; //星期二
+    WEDNESDAY                                    = 3; //星期三
+    THURSDAY                                     = 4; //星期四
+    FRIDAY                                       = 5; //星期五
+    SATURDAY                                     = 6; //星期六
+}
+
+ /* 需保留 */
+message ScheduleItem
+{
+    uint32        time                           = 1; //秒，0 - 86400
+    string         robot                         = 2;
+}
+ /* 需保留 */
+message ScheduleWeek
+{
+    WeekDay                weekday               = 1; //星期,见TeWeekDay
+    repeated ScheduleItem  items                 = 2; //计划时间点列表
+}
+
+enum TourType
+{
+    Tour_WEEKLY                   = 0; //周计划巡检
+    Tour_ONCE                     = 1; //单次巡检
+    Tour_MANUAL                   = 2; //手动巡检
+    Tour_IMMEDIATELY              = 3; //立即巡检
+    Tour_ALL_ON_GALLERY           = 4; //管线上所有站点
+    Tour_ANOMALY_AREA_ON_GALLERY  = 5; //管线上的异常高发区域
+	Tour_ALL					  =	6; //查询所有类型
+}
+
+/***** 分析类型枚举 *****/
+enum AnalysisType
+{
+    Analysis_Unknown       = 0; //未定义
+    Analysis_WS            = 1; //污水识别,明控
+    Analysis_METER         = 2; //仪表识别
+    Analysis_AERATION      = 3; //曝气识别，电子科大
+    Analysis_WasteGasValve = 4; //废气开闭器识别，电子科大
+    Analysis_Thermal       = 5; //托辊温度识别，云南
+}
+/***** 机器人巡检任务(需保留) *****/
+message TourTask
+{
+    uint32                  task      = 1; //巡检任务ID,
+    string                  name      = 2; //任务名称,不能以"-"开头
+    uint32                  line      = 3; //巡检线路ID
+    bool                    enable    = 4; //使能标记
+    TourType                type      = 5; //巡检类型
+    int32                   analysis  = 6; //智能分析类型,取值见 AnalysisType
+    string                  robot     = 7; //单次立即执行时，机器人ID
+    uint32                  perform   = 8; //执行时间，服务器下发任务到机器人时使用
+    repeated ScheduleWeek   schedules = 9; //计划时间，兼容旧版本，新版本使用timePlan字段
+    repeated uint32         stations  = 10; //站点列表,首个站点名称不能以"-"开头
+	map<uint32,IntArray>	timePlan  = 11; //计划时间
+}
+/***** 巡检任务查询结果(需保留) *****/
+message TourTaskQueryResult
+{
+    uint32               pos          = 1; //开始位置,仅列表查询时有效
+    uint32               total        = 2; //总条数
+    repeated TourTask    tasks        = 3;
+}
+enum TourCtrlType
+{
+    Tour_START                           = 0; //启动巡检
+    Tour_PAUSE                           = 1; //暂停巡检
+    Tour_CONTINUE                        = 2; //继续巡检
+    Tour_STOP                            = 3; //终止巡检
+}
+/***** 机器人巡检控制 *****/
+message TourCtrl
+{
+    string          robot     = 1; //兼容字段，机器人ID
+    TourCtrlType    action    = 2; //控制类型，0 - 启动，1 - 暂停，2 - 继续，3 - 终止
+    uint32          tour      = 3; //巡检任务ID
+    int64           beginTime = 4; //巡检启动时间
+    TourType        tourType  = 5; //巡检类型
+    uint32          gallery   = 6; //管线ID
+}
+/***** 巡检任务调度查询条件 *****/
+message TourTaskDispatchQueryCondition
+{
+    WeekDay       weekday                        = 1; //星期
+    uint32        begin                          = 2; //开始时间
+    uint32        end                            = 3; //结束时间
+    uint32        pos                            = 4; //查询下标
+}
+/***** 巡检任务ID查询结果 *****/
+message TourTaskIDQueryResult
+{
+    uint32            pos                        = 1; //开始位置,仅列表查询时有效
+    uint32            total                      = 2; //总条数
+    repeated uint32   tasks                      = 3;
+}
+/***** 机器人手动巡检操作类型 *****/
+enum ManualTourAction
+{
+    ManualTourAction_STOP                        = 0; //停止手动巡检
+    ManualTourAction_START                       = 1; //开始手动巡检
+    ManualTourAction_SENSOR                      = 2; //气体传感器采集
+    ManualTourAction_SNAPSHOT                    = 3; //抓拍
+    ManualTourAction_THERMAL                     = 4; //采集热成像最高温
+}
+/***** 机器人手动巡检参数 *****/
+message ManualTourParam
+{
+    string            robot                      = 1; //机器人ID
+    ManualTourAction  action                     = 2; //手动巡检动作，见 TeManualTourAction
+}
+
+/***** 巡检状态 *****/
+enum TourState
+{
+    TourState_STOP                               = 0; //等待巡检
+    TourState_DISPATCH                           = 1; //等待调度
+    TourState_READY                              = 2; //准备执行
+    TourState_RUNNING_MOVE                       = 3; //正在执行，移动到下一点
+    TourState_RUNNING_DETECTON                   = 4; //正在执行，站点检测
+    TourState_UPLOAD_REPORT                      = 5; //上传报告
+    TourState_INTELLIGENT_ANALYSIS               = 6; //智能分析
+    TourState_FINISH                             = 7; //任务结束
+    TourState_PAUSE                              = 8; //巡检暂停
+    TourState_Completed                          = 9; //机器人检测结束,报告全部上传
+}
+/***** 巡检状态(需保留) *****/
+message TourStatus
+{
+    uint32            task                       = 1; //任务ID
+    string            name                       = 2; //任务名称
+    TourType          type                       = 3; //执行类型，见TourType
+    int32             analysis                   = 4; //智能分析类型,取值见 AnalysisType
+    string            robot                      = 5; //机器人ID
+    string            robotName                  = 6; //机器人名称
+    uint32            begin                      = 7; //开始时间，单位秒
+    uint32            update                     = 8; //更新状态的时间，任务结束后为结束时间，单位秒
+    uint32            detectedNum                = 9; //已检测站点个数
+    uint32            totalNum                   = 10; //总巡检点个数
+    TourState         status                     = 11; //巡检状态，见TourState
+    sint32            statusParam                = 12; //状态参数，Status为 RUNNING 的两种状态时，为StationID
+    sint32            err                        = 13; //0正常、<0 错误
+    string            file                       = 14; //报告文件名，不含路径
+    uint32            len                        = 15; //文件长度
+}
+
+//拍照动作的采样信息
+message Sampling
+{
+    repeated SnapshotSample     samplings		 = 1; //采样图片列表
+    repeated MeterObject		objects			 = 2; //图片上的对象列表
+}
+
+/***** 单个站点对应的巡检结果 *****/
+message TourStationResult
+{
+	TourStation					 tourStation	 = 1; //巡检站点信息
+	TourStatus					 tourStatus		 = 2; //站点的巡检状态信息
+	repeated SensorItem			 sensors		 = 3; //站点采集到的传感器数据以及分析结果
+	map<uint32, Sampling>		 results		 = 4; //key是actionID，value是站点采集到的仪表对象数据以及分析结果
+}
+
+/***** 巡检报告 *****/
+message TourReport
+{
+	TourTask				   tourTask			 = 1; //巡检任务
+	repeated AlarmInfo         alarmInfos        = 2; //告警记录
+	repeated TourStationResult stationResults	 = 3; //站点检测记录
+}
+
+/***** 上传下载巡检报告 *****/
+message UploadDownloadTourReport
+{
+    TourStatus    status                         = 1; //巡检状态，下载时只用到文件名
+    bool          image                          = 2; //是否下载图片标记
+    uint32        dataChannel                    = 3; //数据传输通道
+    bool          singleStation                  = 4; //单一站点的巡检信息
+}
+/***** 巡检报告状态 *****/
+enum TourReportStatus
+{
+    TourReport_ALL                               = 0; //所有状态
+    TourReport_SUCESS                            = 1; //巡检完成
+    TourReport_RUNNING                           = 2; //正在巡查
+    TourReport_FAILED                            = 3; //巡查异常
+}
+/***** 巡检报告查询条件(需保留) *****/
+message TourReportQueryCondition
+{
+    string            robot                      = 1; //机器人ID
+    TourType          type                       = 2; //巡检类型
+    TourReportStatus  status                     = 3; //巡检报告状态
+    uint32            begin                      = 4; //开始时间，秒
+    uint32            end                        = 5; //结束时间，秒
+    uint32            pos                        = 6; //查询下标
+}
+/***** 巡检报告查询结果(需保留) *****/
+message TourReportQueryResult
+{
+    uint32                pos                    = 1; //开始位置,仅列表查询时有效
+    uint32                total                  = 2; //总条数
+    repeated TourStatus   reports                = 3; //巡检报告信息
+}
+
+/***** 巡检详情 *****/
+message TourDetails
+{
+	string           object     = 1; //检测项名称
+	uint32           time       = 2; //检测时间
+	string           conclusion = 3; //是否正常
+	string           area       = 4; //所在区域（ 区域名称 ）
+	string           station    = 5; //所在巡检点（巡检点名称）
+	string           dvsID      = 6; //检测来源ID（原执行机器人）
+	string           dvsName    = 7; //检测来源名称
+	repeated  string images     = 8; //检测照片 
+}
+
+/***** 巡检统计 *****/
+message TourSummary
+{
+	uint32              previousPeriodTasks      = 1; //上期完成任务数，环比
+	map<uint32, uint32> currentPeriodTasks       = 2; //本期完成任务数, key 取值 0 手动下发， 1 自动下发
+	uint32              previousPeriodObjects    = 3; //上期检测对象数，环比
+	map<string, uint32> currentPeriodObjects     = 4; //本期检测对象数, key 正常 or 异常
+	uint32              previousPeriodExceptions = 5; //上期检测异常数，环比
+	map<string, uint32> currentPeriodExceptions  = 6; //本期检测异常数, key 区域
+	map<uint32, uint32> exceptionsTendency       = 7; //异常趋势，key 每天的开始时间，秒， value 每天的异常数
+	map<uint32, uint32> dailyTasks               = 8; //每天任务个数，key 每天的开始时间，秒， value 每天执行的检测
+}
+
+/***** 机器人巡检参数 *****/
+message RobotTour
+{
+    string                robot                  = 1; //机器人ID
+    repeated TourStation  stations               = 2; //巡检兴趣点
+}
+/***** 机器人自动巡检参数 *****/
+message RobotAutoTour
+{
+    string       robot                           = 1; //机器人ID
+    sint32       begin                           = 2; //巡检开始位置
+    sint32       end                             = 3; //巡检开始位置
+    uint32       times                           = 4; //巡检次数
+}
+/***** 充电操作类型 *****/
+enum ChargeOperation
+{
+    ChargeOperation_STOP                         = 0; //停止充电
+    ChargeOperation_AUTO                         = 1; //自动充电
+    ChargeOperation_START                        = 2; //手动开始充电
+}
+/***** 机器人充电控制 *****/
+message RobotChargeCtrl
+{
+    string               robot                   = 1; //机器人ID
+    ChargeOperation      operation               = 2; //充电操作,见TeChargeOperation
+}
+/***** 云台控制类型 *****/
+enum PtzCtrlType
+{
+    PtzCtrl_STOP                                 = 0; //云台停止
+    PtzCtrl_LAMP_ON                              = 1; //开灯
+    PtzCtrl_LAMP_OFF                             = 2; //关灯
+    PtzCtrl_ZOOM_IN                              = 3; //变倍拉近
+    PtzCtrl_ZOOM_OUT                             = 4; //变倍拉远
+    PtzCtrl_FOUCS_NEAR                           = 5; //近焦
+    PtzCtrl_FOUCS_FAR                            = 6; //远焦
+    PtzCtrl_FOUCS_AUTO                           = 7; //自动聚焦
+    PtzCtrl_WIPER_RUN                            = 8; //雨刮
+    PtzCtrl_DEMIST_RUN                           = 9; //除雾
+    PtzCtrl_ROTATE_UP                            = 10; //向上
+    PtzCtrl_ROTATE_DOWN                          = 11; //向下
+    PtzCtrl_ROTATE_LEFT                          = 12; //向左
+    PtzCtrl_ROTATE_RIGHT                         = 13; //向右
+    PtzCtrl_ROTATE_LEFT_UP                       = 14; //左上
+    PtzCtrl_ROTATE_LEFT_DOWN                     = 15; //左下
+    PtzCtrl_ROTATE_RIGHT_UP                      = 16; //右上
+    PtzCtrl_ROTATE_RIGHT_DOWN                    = 17; //右下
+    PtzCtrl_RESET                                = 18; //复位
+    PtzCtrl_SET_CENTER                           = 19; //设置云台中心
+    PtzCtrl_PTZ_PRESET_FRONT                     = 20; //前
+    PtzCtrl_PTZ_PRESET_BACK                      = 21; //后
+    PtzCtrl_PTZ_PRESET_LEFT                      = 22; //左
+    PtzCtrl_PTZ_PRESET_RIGHT                     = 23; //右
+    PtzCtrl_PTZ_PRESET_LEFT_FRONT                = 24; //左前
+    PtzCtrl_PTZ_PRESET_LEFT_BACK                 = 25; //左后
+    PtzCtrl_PTZ_PRESET_RIGHT_FRONT               = 26; //右前
+    PtzCtrl_PTZ_PRESET_RIGHT_BACK                = 27; //右后
+    PtzCtrl_PTZ_PRESET_DOWN                      = 28; //下
+    PtzCtrl_LIFT_CTRL_RESET                      = 29; //升降架复位
+    PtzCtrl_LIFT_CTRL_STOP                       = 30; //升降架停止
+    PtzCtrl_LIFT_CTRL_UP                         = 31; //升降架上升
+    PtzCtrl_LIFT_CTRL_DOWN                       = 32; //升降架下降
+    PtzCtrl_PTZ_GOTO_PRESET                      = 33; //调用预置位
+}
+/***** 云台控制参数 *****/
+message RobotPtzCtrl
+{
+    string        robot                          = 1; //机器人ID
+    uint32        ptz                            = 2; //云台ID
+    PtzCtrlType   ctrl                           = 3; //控制类型，见TePtzCtrlType
+    uint32        param                          = 4; //控制参数，由控制类型确定
+}
+
+/***** 路基转换器 *****/
+/***** S2E 是 serial port to ethernet module 的简写 *****/
+message RoadbaseS2E
+{
+    uint32           id                          = 1; //路基转换器ID
+    repeated uint32  gallerys                    = 2; //路基组关联管廊ID
+    string           name                        = 3; //路基转换器名称
+    string           ip                          = 4; //路基转换器IP
+    uint32           port                        = 5; //路基转换器端口
+    bool             enable                      = 6; //使能标记
+    bool             proxyEnable                 = 7; //是否启用代理
+    string           proxyID                     = 8; //路基转换器代理ID
+}
+/***** 位置信息 *****/
+message GalleryPosition
+{
+    uint32      gallery                          = 1; //管线ID
+    sint32      location                         = 2; //管线位置
+}
+/***** 路基设备信息 *****/
+message Roadbase
+{
+    uint32                       id        = 1; //路基设备ID
+    uint32                       addr      = 2; //路基设备485地址
+    uint32                       reg       = 3; //路基设备寄存器地址
+    uint32                       s2e       = 4; //路基转换器ID
+    uint32                       type      = 5; //路基设备类型，见TeRoadbaseType
+    string                       name      = 6; //路基设备名称
+    map<string, GalleryPosition> positions = 7; //关联的管线位置,当前有A、B、C端
+    uint32                       status    = 8; //路基设备状态
+    map<string, int32>           data      = 9; //数据
+}
+
+/***** 路基设备操作类型 *****/
+enum RoadbaseAction
+{
+option allow_alias                               = true;
+    RoadbaseAction_CLOSE                         = 0; //关闭
+    RoadbaseAction_OPEN                          = 1; //打开
+    RoadbaseAction_CURVE                         = 0; //弯轨
+    RoadbaseAction_STRAIGHT                      = 1; //直轨
+    RoadbaseAction_STOP_CHARGE                   = 0; //停止充电
+    RoadbaseAction_START_CHARGE                  = 1; //充电
+    RoadbaseAction_PREPARE_CHARGE                = 2; //准备开始充电
+    RoadbaseAction_RESET                         = 3; //复位
+    RoadbaseAction_READ                          = 10;//读状态
+}
+/***** 路基控制参数 *****/
+message RoadbaseCtrl
+{
+    uint32             s2e                       = 1; //路基转换器ID
+    uint32             roadbase                  = 2; //路基设备ID
+    int32              action                    = 3; //路基控制类型，见TeRoadbaseAction
+    int32              param                     = 4; //路基控制参数
+}
+enum IvasStatus
+{
+    IvasStatus_DISCONNECT                        = 0; //未连接
+    IvasStatus_LEARNING                          = 1; //学习中
+    IvasStatus_READY                             = 2; //就绪
+    IvasStatus_ERROR                             = 3; //异常
+}
+/***** 报警设备类型 *****/
+enum AlarmType
+{
+    AlarmType_IDLE                               = 0; //动力电池
+    AlarmType_BATTERY_PRIMARY                    = 1; //动力电池
+    AlarmType_BATTERY_AUXILIARY                  = 2; //辅助电池（目前用于机械臂供电）
+    AlarmType_O2                                 = 3; //氧气
+    AlarmType_H2S                                = 4; //硫化氢
+    AlarmType_CH4                                = 5; //甲烷
+    AlarmType_NH3                                = 6; //氨气
+    AlarmType_ENVIRONMENT_TEMPERATURE            = 7; //环境温度
+    AlarmType_HUMIDITY                           = 8; //湿度
+    AlarmType_THERMAL_TEMPERATURE                = 9; //热成像最高温
+    AlarmType_FOG                                = 10; //烟感
+    AlarmType_OBSTACLE                           = 11; //避障
+	AlarmType_CO                                 = 12; //一氧化碳
+    AlarmType_LEVEL_SENSOR                       = 100;  //液位传感器
+}
+/***** 报警策略项参数 *****/
+//message AlarmPolicyItem
+//{
+//    AlarmType     type                           = 1; //报警类型，见TeAlarmType
+//    bool          enable                         = 2; //是否启用报警
+//    sint32        warning                        = 3; //预警阈值
+//    sint32        alarm                          = 4; //报警阈值
+//    uint32        interval                       = 5; //报警间隔，单位:秒
+//}
+///***** 报警策略参数 *****/
+//message AlarmPolicy
+//{
+//    string                     robot             = 1; //机器人ID,注：机器人ID为空时，配置系统通用报警策略
+//    bool                       all               = 2; //是否应用到所有机器人
+//    repeated AlarmPolicyItem   items             = 3; //配置项
+//}
+/***** 报警级别 *****/
+enum AlarmLevel
+{
+    AlarmLevel_IDLE                              = 0; //
+    AlarmLevel_EARLY_WARNING                     = 1; //预警
+    AlarmLevel_ALARM                             = 2; //报警
+}
+/***** 报警信息 *****/
+message AlarmInfo
+{
+    string              id                       = 1; //报警源ID {机器人ID 或者 （转换器ID*1000 + 路基ID）}
+    AlarmType           type                     = 2; //报警类型，见AlarmType
+    AlarmLevel          level                    = 3; //报警级别，见AlarmLevel
+    float               value                    = 4; //报警值
+    sint64              time                     = 5; //报警时间
+    sint32              location                 = 6; //机器人位置
+    string              gallery                  = 7; //管廊名称
+    string              name                     = 8; //报警源名称
+}
+
+message AlarmInfoV2
+{
+    int32             id          = 1;  //自动编号
+    int32             dvsType     = 2;  //设备类型 （ 可跟现场需求定制 ）
+    string            dvsName     = 3;  //设备名称
+    int32             level       = 4;  //告警级别 （ 可跟现场需求定制 ）
+    int32             valueType   = 5;  //告警值类型  0 - 数值,  1 - 字符串
+    string            value       = 6;  //告警值
+    repeated string   images      = 7;  //图片名称
+    sint64            time        = 8;  //告警时间,毫秒
+    string            area        = 9;  //区域
+    int32             galleryId   = 10; //管线ID
+    int32             location    = 11; //计米
+    string            galleryName = 12; //管线名称
+    string            sourceID    = 13; //告警源ID
+    string            sourceName  = 14; //告警源名称
+    int32             flag        = 15; //处理标记
+    string            desc        = 16; //处理描述
+	string            handler     = 17; //处理人
+    string            base64Image = 18; //base64编码的图片数据
+}
+
+/***** 报警日志查询条件 *****/
+message AlarmLogQueryCondition
+{
+    string           robot                       = 1; //机器人ID，为空时，查所有机器人
+    AlarmType        type                        = 2; //报警类型，见TeAlarmType
+    AlarmLevel       level                       = 3; //报警级别，见TeAlarmLevel
+    sint64           beginTime                   = 4; //单位：毫秒
+    sint64           endTime                     = 5; //单位：毫秒
+    sint32           beginLocation               = 6; //开始位置
+    sint32           endLocation                 = 7; //结束位置
+    uint32           pos                         = 8; //开始位置，分页查询从第几条开始返回
+}
+/***** 报警日志查询结果 *****/
+message AlarmLogQueryResult
+{
+    uint32                pos                    = 1; //开始位置
+    uint32                total                  = 2; //总条数
+    repeated AlarmInfo    infos                  = 3;
+}
+/***** 报警摘要 *****/
+message AlarmSummary
+{
+    string           robot                       = 1; //机器人ID
+    uint32           warning                     = 2; //预警数量
+    uint32           alarm                       = 3; //报警数量
+}
+/***** 报警摘要查询结果 *****/
+message AlarmSummaryQueryResult
+{
+    repeated AlarmSummary      summaries         = 1;
+}
+/****无线模块在线状态****/
+enum WirelessStatus
+{
+    WirelessStatus_IDLE                          = 0; //空闲
+    WirelessStatus_ONLINE                        = 1; //在线
+    WirelessStatus_OFFLINE                       = 2; //离线
+}
+/********************************************** 以下是通知消息体 *********************************************************************/
+/***** 机器人在线状态 *****/
+enum RobotState
+{
+    RobotState_IDLE                              = 0; //空闲
+    RobotState_ONLINE                            = 1; //在线
+    RobotState_READY                             = 2; //就绪
+    RobotState_USING                             = 3; //占用
+    RobotState_OFFLINE                           = 4; //离线
+}
+/***** 机器人在线状态 *****/
+message RobotStatus
+{
+    string           robot                       = 1; //机器人ID
+    RobotState       status                      = 2; //机器人状态,参见 TeRobotStatus
+}
+/***** 报警日志查询结果 *****/
+message RobotStatusQueryResult
+{
+    uint32                 pos                   = 1; //开始位置
+    uint32                 total                 = 2; //总条数
+    repeated RobotStatus   status                = 3;
+}
+/***** 机器人运行状态 *****/
+message RobotRunningLog
+{
+    string           robot                       = 1; //机器人ID
+    string           status                      = 2;
+}
+/***** 机器人上下线记录 *****/
+message RobotOnlineCount
+{
+    string           robot                       = 1; //机器人ID
+    string           name                        = 2; //机器人名称
+    uint32           online                      = 3; //机器人上线时间
+    uint32           offline                     = 4; //机器人下线时间
+}
+/*****  机器人上下线查询条件 *****/
+message RobotOnlineQueryCondition
+{
+    string        robot                          = 1; // 机器人ID
+    uint32        begin                          = 2; //开始时间
+    uint32        end                            = 3; //结束时间
+    uint32        pos                            = 4; //查询下标
+}
+/***** 机器人上下线记录查询结果 *****/
+message RobotOnlineCountQueryResult
+{
+    uint32                      pos              = 1; //开始位置
+    uint32                      total            = 2; //总条数
+    repeated RobotOnlineCount   counts           = 3;
+}
+
+//message WarningLevel
+//{
+//    uint32   level     = 1; //告警级别
+//    string   name      = 2; //级别名称
+//    int32    threshold = 3; //数值告警阈值
+//    string   value     = 4; //文本告警取值
+//}
+//
+//message AlarmPolicy
+//{
+//    uint32                dvsType   = 1; //报警类型，见TeAlarmType
+//    bool                  enable    = 2;  //是否启用报警
+//    int32                 alarmType = 3; //告警类型，0 - 数值降序告警， 1 - 数值升序告警， 2 - 文本告警
+//    repeated WarningLevel levels    = 4; //告警分级
+//    int32                 interval  = 5; //告警级别
+//}
+//
+//message SectionAlarmPolicy
+//{
+//    uint32      begin  = 1; //计米开始
+//    uint32      end    = 2; //计米结束
+//    AlarmPolicy policy = 3; //告警策略
+//}
+//
+//message GalleryAlarmPolicy
+//{
+//    uint32                      gallery  = 1; //管线ID
+//    repeated SectionAlarmPolicy sections = 2; //分段告警配置
+//}
+
+/***** 机器人传感器项 *****/
+message SensorItem
+{
+    bool               enable   = 1 [deprecated = true]; //是否支持
+    float              value    = 2; //采样值
+    int32              analysis = 3; //告警级别
+    string             name     = 4; //传感器名称
+    string             symbo    = 5; //符号
+    string             units    = 6; //单位
+	int32              type     = 7; //设备类型
+    map<int32, string> status   = 8; //状态表,目前仅用于路基状态翻译
+}
+
+/***** 机器人传感器状态 *****/
+message SensorInfo
+{
+    SensorItem    O2                             = 1; //氧气浓度，取值
+    SensorItem    CH4                            = 2; //甲烷浓度，取值
+    SensorItem    H2S                            = 3; //硫化氢浓度，取值
+    SensorItem    NH3                            = 4; //氨气浓度，取值
+    SensorItem    temperature                    = 5; //环境温度，单位：摄氏度，取值
+    SensorItem    humidity                       = 6; //湿度，取值
+}
+/***** 机器人车体状态 *****/
+message CarStatus
+{
+    string                 robot    = 1; //机器人ID
+    uint32                 gallery  = 2; //管廊ID
+    sint32                 location = 3; //计米位置，单位：毫米
+    sint32                 speed    = 4; //运行速度，单位：毫米每秒
+    string                 state    = 5; //小车当前的状态
+    uint64                 time     = 6; //当前时间，毫秒
+    uint32                 flag     = 7; //0:location 传感器数据为0     1:有传感器数据       2:机器人错误状态
+    SensorInfo             sensor   = 8 [deprecated = true]; //传感器信息
+    uint64                 uptime   = 9; //开机运行时间，毫秒
+    repeated SensorItem    sensors  = 10; //新版传感器信息
+}
+
+message UnitItem
+{
+    string  name    = 1; //部件名称
+    string  status  = 2; //部件状态
+    bool    isFault = 3; //是否异常
+}
+
+message RobotUnitsStatus
+{
+    string              robot = 1;
+    uint64              time  = 2;
+    repeated UnitItem   items = 3;
+}
+
+/**** 路基设备传感器类型 ****/
+enum MonitoredDvsType
+{
+    MonitoredDvs_LEVEL                           = 0; //液位传感器
+}
+/***** 设备传感器状态 *****/
+message MonitoredDvsInfo
+{
+    string           source                      = 1; //机器人ID
+    MonitoredDvsType type                        = 2; //设备传感器类型
+    SensorItem       level                       = 3; //液体传感器，取值
+    sint64           time                        = 4; //单位秒
+}
+/***** 机器人电池单元状态 *****/
+message BatteryCell
+{
+    uint32           id                          = 1; //电池编号
+    float            voltage                     = 2; //电压，单位：mV
+    float            electricity                 = 3; //电流，单位：mA
+    float            total                       = 4; //总电量，单位：mAH
+    float            remain                      = 5; //剩余电量，单位：mAH
+    float            temperature                 = 6; //电池温度，单位：摄氏度
+}
+/***** 机器人电池参数 *****/
+message BatteryInfo
+{
+    string                    robot              = 1; //机器人ID
+    repeated BatteryCell      cells              = 2; //电池单元信息
+}
+/***** 热成像仪最高温点参数 *****/
+message RobotThermal
+{
+    string        robot                          = 1; //机器人ID
+    uint32        channel                        = 2; //通道ID
+    uint32        nX                             = 3; //最高温点 X 坐标
+    uint32        nY                             = 4; //最高温点 Y 坐标
+    SensorItem    thermal                        = 5; //热成像采样
+}
+/***** 采样数据 *****/
+message SnapshotSample
+{
+    string            image                      = 1; //采样图片名称
+    string            analysis                   = 2; //图片分析结果
+    SensorItem        thermal                    = 3; //热成像采样
+    uint32            time                       = 4; //抓拍的时间
+}
+/***** 机械臂状态 *****/
+message RobotArmStatus
+{
+    string                robot                  = 1; //机器人ID
+    bool                  connected              = 2; //是否连接
+    bool                  moving                 = 3; //是否移动
+    bool                  powerOn                = 4; //是否上电
+    bool                  error                  = 5; //是否出错
+    bool                  brake                  = 6; //抱闸
+    sint32                err                    = 7; //错误码
+    sint32                errAxis                = 8; //出错的轴
+    RobotPtz              angle                  = 9; //机械臂角度
+}
+
+message RobotPtzStatus
+{
+    string                     robot             = 1; //机器人ID
+    map<uint32, RobotPtz>      ptzs              = 2; //key为通道号，value为云台角度
+}
+/***** 回放状态 *****/
+message RetrievalStatus
+{
+    string               robot                   = 1; //机器人ID
+    uint32               channel                 = 2;
+    sint32               status                  = 3;
+    sint64               next                    = 4; //下一帧时间戳
+}
+message ChannelMediaStatus
+{
+    uint32   channel                             = 1;
+    sint32   status                              = 2; //0 表示录像正常，负值 表示录像错误码
+}
+message RobotMediaStatus
+{
+    string                        robot          = 1;
+    repeated ChannelMediaStatus   status         = 2;
+}
+message ChannelMediaStatusEx
+{
+    uint32     channel                           = 1; //通道号
+    string     desc                              = 2; //描述
+    sint32     status                            = 3; //状态
+    sint64     length                            = 4; //累计数据长度
+}
+message MediaStatusEx
+{
+    ChannelMediaStatusEx           source        = 1;
+    repeated ChannelMediaStatusEx  consumers     = 2; //32
+}
+message RobotMediaStatusEx
+{
+    string                   robot               = 1; //机器人ID
+    repeated MediaStatusEx   status              = 2;
+}
+enum LanguegeType
+{
+    LANGUEGE_CHINESE                             = 0; //中文
+    LANGUEGE_ENGLISH                             = 1; //英文
+}
+/***** 操作记录 *****/
+message OperationRecord
+{
+    uint32          time                         = 1; //操作时间
+    string          ip                           = 2; //操作机器IP
+    string          name                         = 3; //操作用户
+    sint32          cmd                          = 4; //操作命令
+    string          explain                      = 5; //操作命令说明
+    sint32          result                       = 6; //操作结果
+    string          param                        = 7; //操作重要参数
+}
+/*****  操作记录查询条件 *****/
+message OperationRecordQueryCondition
+{
+    string        ip                             = 1; // IP
+    uint32        begin                          = 2; //开始时间
+    uint32        end                            = 3; //结束时间
+    uint32        pos                            = 4; //查询下标
+}
+/***** 操作记录查询结果 *****/
+message OperationRecordQueryResult
+{
+    uint32                     pos               = 1; //开始位置
+    uint32                     total             = 2; //总条数
+    repeated OperationRecord   records           = 3;
+}
+/***** 液位传感器数据记录 *****/
+message MonitoredDvsRecord
+{
+    string                source                 = 1; //传感器数的源ID
+    MonitoredDvsType      type                   = 2; //
+    sint32                value                  = 3; //单位： mm
+    sint64                time                   = 4; //操作时间 秒
+}
+
+enum CarStatusType
+{
+    CarStatus_Location     = 0; //位置,查询时间跨度不超过1天
+    CarStatus_Sensor       = 1; //传感器,查询时间跨度不超过1天
+    CarStatus_Sensor_Day   = 2; //按天查传感器
+    CarStatus_Sensor_Week  = 4; //按周查传感器
+    CarStatus_Sensor_Month = 8; //按月查传感器
+    CarStatus_Sensor_Year  = 16; //按年查传感器
+    CarStatus_Error        = 3; //错误
+}
+
+/*****  小车状态及传感器记录查询条件 *****/
+message CarStatusQueryCondition
+{
+    string        robot                          = 1; //传感器数的源ID
+    sint32        beginLocation                  = 2; //起始位置
+    sint32        endLocation                    = 3; //结束位置
+    sint64        beginTime                      = 4; //开始时间
+    sint64        endTime                        = 5; //结束时间
+    CarStatusType type                           = 6; //查询数据类型
+}
+/***** 小车状态及传感器记录查询结果 *****/
+message CarStatusQueryResult
+{
+    sint64                endTime     = 1; //查询截止日期
+    repeated CarStatus    carStatuses = 2; //查询结果
+}
+/***** 机器人部件状态查询结果 *****/
+//message RobotUnitsStatusQueryResult
+//{
+//    sint64                      endTime     = 1; //查询截止日期
+//    repeated RobotUnitsStatus   unitsStatus = 2; //查询结果
+//}
+/*****  路基设备数据记录查询条件 *****/
+message MonitoredDvsRecrdQueryCondition
+{
+    string             source                    = 1; //传感器数的源ID
+    MonitoredDvsType   type                      = 2; //路基设备类型
+    sint64             begin                     = 3; //开始时间
+    sint64             end                       = 4; //结束时间
+    uint32             pos                       = 5; //查询下标
+}
+/*****路基设备数据记录查询结果 *****/
+message MonitoredDvsRecordQueryResult
+{
+    uint32                        pos            = 1; //开始位置
+    uint32                        total          = 2; //总条数
+    repeated MonitoredDvsRecord   records        = 3;
+}
+/***** 爬行器叠加字符类型 *****/
+enum SrodFilterType
+{
+    SrodFilter_UNKNOWN                           = 0; //未定义
+    SrodFilter_HEADER                            = 1; //片头
+    SrodFilter_BODY                              = 2; //正文
+    SrodFilter_TAIL                              = 3; //片尾
+}
+/***** 爬行器叠加字体 *****/
+message SrodFilterFont
+{
+    string   file                                = 1;
+    string   color                               = 2;
+    sint32   size                                = 3;
+}
+/***** 爬行器叠加文本 *****/
+message SrodFilterText
+{
+    sint32    type                               = 1; //0 time 1 text 2 image
+    sint32    x                                  = 2;
+    sint32    t                                  = 3;
+    string    text                               = 4;
+}
+/***** 云台区域选择放大缩小(私有 快球专用) *****/
+message Ptz3DRect
+{
+    sint32 xTop                                  = 1; //方框起始点的x坐标
+    sint32 yTop                                  = 2; //方框起始点的y坐标
+    sint32 xBottom                               = 3; //方框结束点的x坐标
+    sint32 yBottom                               = 4; //方框结束点的y坐标
+    sint32 counter                               = 5; //保留
+}
+message Ptz3DPoint
+{
+    sint32 x                                     = 1; //中心点坐标
+    sint32 y                                     = 2; //中心点坐标
+    sint32 zoom                                  = 3; //变倍
+}
+message Ptz3DParam
+{
+    string     robot                             = 1;
+    Ptz3DPoint point                             = 2;
+    Ptz3DRect  rect                              = 3;
+}
+message WirelessInfo
+{
+    string robot                                 = 1; //机器人ID
+    string ip                                    = 2; //无线模块IP
+    sint32 frequency                             = 3; //射频频率
+    string enable                                = 4; //使能
+    sint32 port                                  = 5; //无线模块端口号
+    string addr                                  = 6; //机器人无线模块通信地址
+    string status                                = 7; //机器人状态 00前进 01停止 02后退
+}
+
+message ImageClassify
+{
+    int32           level = 1; //分类级别
+    repeated string names = 2; //图片名称
+}
+
+message ImageCollection
+{
+    string                 dir    = 1; //目录名称
+    repeated ImageClassify images = 2; //图片分类列表
+}
+
+message IvasUpload
+{
+    int32  type  = 1; //识别类型，比如污水曝气识别
+    int32  level = 2; //图片级别, 0是异常，1是正常
+    string name  = 3; //图片名称
+    int32  len   = 4; //图片大小
+}
+
+/***** 仪表识别对象 *****/
+message MeterObject
+{
+    string name       = 1; //对象名称
+    string type       = 2; //对象类型
+    int32  topX       = 3; //对象区域左上x
+    int32  topY       = 4; //对象区域左上Y
+    int32  bottomX    = 5; //对象区域右下x
+    int32  bottomY    = 6; //对象区域右下y
+    string analysis   = 7; //分析结果
+    string sampling   = 8; //分析使用的采样图片
+    string precision  = 9; //精确度
+    string conclusion = 10; //分析结论
+}
+
+/***** 仪表对象采样 *****/
+message  MeterSampling
+{
+    repeated string			samplings = 1; //采样图片列表
+    repeated MeterObject	objects   = 2; //图片上的对象列表
+}
+
+/***** 仪表对象采样列表 *****/
+message MeterSamplingArray
+{
+    repeated MeterSampling meters = 1; //对象数组
+}
+
+/***** 仪表识别结果对应名称 *****/
+message MeterResult
+{
+    string  type               = 1; //仪表对象类型
+    string  name               = 2; //仪表类型名称
+    map<string, string> values = 3; //仪表识别结果对应名称
+}
+
+/***** 仪表识别结果对应名称列表 *****/
+message MeterResultArray
+{
+    repeated MeterResult    results = 1;
+}
+
+/***** 部件状态 *****/
+message UnitStatus
+{
+    string     result = 1; //分析结果
+    Rect       area   = 2; //区域
+}
+
+/***** 废气阀状态 *****/
+message  WasteGasValve
+{
+    UnitStatus l_fan_wheel   = 1; //左扇轮
+    UnitStatus l_chain       = 2; //左链条
+    UnitStatus l_cover_plate = 3; //左盖板
+    UnitStatus r_fan_wheel   = 4; //右扇轮
+    UnitStatus r_chain       = 5; //右链条
+    UnitStatus r_cover_plate = 6; //右盖板
+    string     conclusion    = 7; //结论
+}
+
+/***** 废气阀分时正常状态 *****/
+message WasteGasValveTimeState
+{
+    repeated uint32            timesOfDay = 1; //一天内时间段
+    map<string, WasteGasValve> states     = 2; //设备 - 状态
+}
+
+/***** 废气阀正常状态表汇总 *****/
+message WasteGasValveTimeStateTable
+{
+    repeated WasteGasValveTimeState tables = 1; //多时段状态汇总
+}
+
+/***** 设备类型的配置表 *****/
+message DvsInfoConfig
+{
+	map<uint32, SensorItem>  carSensors = 1; //车载传感器	1-200
+	map<uint32, SensorItem>  roadbase   = 2; //路基设备		201-1000
+	map<uint32, SensorItem>  extend     = 3; //外接扩展设备  1001-5000
+	map<uint32, SensorItem>  tour       = 4; //巡检识别设备  5001开始
+}
+
+/***** 单条皮带撕裂告警数据 *****/
+message ConveyorAlarmItem
+{
+	uint64 alarmTime   = 1;    //报警时间戳
+	string beltName    = 2;    //皮带名称
+	string deviceName  = 3;    //设备名称
+	string guid        = 4;    //guid
+	string monitorName = 5;    //测点名称
+	string note        = 6;    //报警说明
+	string picurl      = 7;    //报警图像（Base64）
+	uint32 type        = 8;    //1皮带撕裂，2皮带跑偏，3异物检测
+}
+/***** 皮带撕裂系统上报的原始数据 *****/
+message ConveyorAlarm
+{
+	repeated ConveyorAlarmItem alarms = 1; //多条皮带撕裂告警信息
+}
