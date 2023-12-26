@@ -1,4 +1,6 @@
-
+from PyQt5.QtCore import *
+from PyQt5.QtGui import QImage,QIcon,QPixmap
+from functools import partial
 from thread import *
 from ui import *
 import time
@@ -51,8 +53,9 @@ class mainwindow(QMainWindow):
         self.ui.pushButton_5.clicked.connect(lambda: self.ui.stackedWidget_3.setCurrentIndex(1))
         self.ui.pushButton_6.clicked.connect(lambda: self.ui.stackedWidget_3.setCurrentIndex(0))
         self.thread=threadrobot()
-        self.thread.start()
-
+        #self.thread.start()
+        # self.ui.pushButton_xx.clicked.connect(self.some_button_clicked)
+        self.thead.getph.getphoto_signal.connect(self.on_getphoto_signal)
 
         #table初始化
         self.tableLinkSql()
@@ -70,10 +73,14 @@ class mainwindow(QMainWindow):
         self.ui.pushButton_daochu.clicked.connect(lambda: self.makeExcel())
         self.ui.tableWidget_2.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-        self.getphoto=Getphoto_signal()
-        self.getphoto.getphoto_signal.connect(self.on_getphoto_signal)
+
+
+    def some_button_clicked(self):
+        print('发送信号')
+        self.getph.getphoto_signal.emit()
 
     def on_getphoto_signal(self):
+        print('收到信号')
         self.mainUiLinkCamera()
     def makeExcel(self):
         if 1==self.ui.stackedWidget_4.currentIndex():

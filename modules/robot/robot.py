@@ -1123,12 +1123,12 @@ class Unfilepack(object):
     
 
 class MyWebSocket:
-    def __init__(self, ws_address):
+    def __init__(self, ws_address,getph):
         self.ws = websocket.WebSocketApp(ws_address,
                                          on_message=self.on_message,
                                          on_error=self.on_error,
                                          on_close=self.on_close)
-
+        self.getph=getph
         self.ws.on_open = self.on_open
 
     def download_tar(url, filename):    
@@ -1182,7 +1182,6 @@ class MyWebSocket:
             if tourStatus.len > 0:
                 with global_tourstate_lock:
                     global_tourstate = tourStatus.task
-                    getph=signal.Getphoto_signal()
                     getph.getphoto_signal.emit()
                 # 创建线程对象
                 # tar.gz 文件的下载链接和本地保存路径
