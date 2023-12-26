@@ -1,6 +1,4 @@
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+
 from thread import *
 from ui import *
 import time
@@ -16,6 +14,7 @@ n=0
 exit=False
 frame=None
 from openpyxl import Workbook
+from modules import *
 user_now=''
 vip_account='724'
 
@@ -70,6 +69,12 @@ class mainwindow(QMainWindow):
 
         self.ui.pushButton_daochu.clicked.connect(lambda: self.makeExcel())
         self.ui.tableWidget_2.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        self.getphoto=Getphoto_signal()
+        self.getphoto.getphoto_signal.connect(self.on_getphoto_signal)
+
+    def on_getphoto_signal(self):
+        self.mainUiLinkCamera()
     def makeExcel(self):
         if 1==self.ui.stackedWidget_4.currentIndex():
             table=self.ui.tableWidget_4
