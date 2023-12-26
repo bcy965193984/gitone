@@ -8,6 +8,7 @@ import sys
 sys.path.append('F:/Project/project 1219/modules/robot/')
 import UsrDomain_pb2 as ControlCommand
 import threading
+import signal
 import time
 import tarfile
 import os
@@ -1181,6 +1182,8 @@ class MyWebSocket:
             if tourStatus.len > 0:
                 with global_tourstate_lock:
                     global_tourstate = tourStatus.task
+                    getph=signal.Getphoto_signal()
+                    getph.getphoto_signal.emit()
                 # 创建线程对象
                 # tar.gz 文件的下载链接和本地保存路径
                 file_url = 'http://192.168.18.236:8000/TourReport/' + tourStatus.file
@@ -1217,12 +1220,12 @@ class MyWebSocket:
         self.ws.run_forever()
 
 
-if __name__ == '__main__':
+# if __name__ == '__main__':
 
-    # 定义 WebSocket 地址
-    ws_address = "ws://192.168.18.236:8000/subscribe"
-    client = MyWebSocket(ws_address)
-    client.connect_to_websocket(ws_address)
+#     # 定义 WebSocket 地址
+#     ws_address = "ws://192.168.18.236:8000/subscribe"
+#     client = MyWebSocket(ws_address)
+#     client.connect_to_websocket(ws_address)
         
 #     # robot.GetRobotInfo(1, 0, 100, True)
 #     # obj = Unfilepack()
