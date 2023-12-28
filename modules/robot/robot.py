@@ -188,15 +188,24 @@ class robot(object):
             "Content-Type":"application/octet-stream",
         }
 
-        # 构造 Protocol Buffers 对象并序列化
-        command_message = ControlCommand(sld=sld, iParam=iParam)
-        data_in = command_message.SerializeToString()
+        reqMsg = ControlCommand.CommonMsg()
+        reqMsg.sId = sld
+        reqMsg.iParam = iParam
+        reqMsg.data.Pack(reqMsg)
+        print(reqMsg)
 
-        response = requests.post(url, headers=headers, data=data_in)
+        reqData = reqMsg.SerializeToString()
+
+        # #发送POST请求
+        response = requests.post(url, headers=headers, data=reqData)
 
         if response.status_code == 200:
-            print('Success:', response.json())
-            result_data = response.content
+            respData = response.content
+            print(respData)
+            respMsg = ControlCommand.CommonMsg()
+            respMsg.ParseFromString(respData)
+            # print('respMsg.ret:', respMsg.ret)
+            # print('respMsg.sParam:', respMsg.sParam)
         else:
             print('Error:', response.status_code)
 
@@ -1103,7 +1112,7 @@ class SmartAnalysis(object):
 
 class Unfilepack(object):
     def __init__(self):
-        file_path = 'F:/站点0_20230830_181418/站点0_20230830_181418.json'
+        file_path = '.../cameras/站点0_20230830_181418.json'
         self.load_json(file_path)   
         # pd.read_json(file_path)   
 
@@ -1152,7 +1161,7 @@ class MyWebSocket:
 
             # 解压文件
             with tarfile.open(filename, 'r:gz') as tar:
-                tar.extractall(path='F:/Project/project 1219/cameras/')  # 将文件解压到指定目录
+                tar.extractall(path='.../cameras/')  # 将文件解压到指定目录
 
             # 删除下载的 tar.gz 文件
             os.remove(filename)
@@ -1182,11 +1191,11 @@ class MyWebSocket:
             if tourStatus.len > 0:
                 with global_tourstate_lock:
                     global_tourstate = tourStatus.task
-                    getph.getphoto_signal.emit()
+                    self.getph.getphoto_signal.emit()
                 # 创建线程对象
                 # tar.gz 文件的下载链接和本地保存路径
                 file_url = 'http://192.168.18.236:8000/TourReport/' + tourStatus.file
-                local_filename = 'F:/Project/project 1219/cameras/' + tourStatus.file
+                local_filename = '.../cameras/' + tourStatus.file
                 # print(file_url)
                 download_thread = threading.Thread(target=MyWebSocket.download_tar, args=(file_url, local_filename))
 
