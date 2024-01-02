@@ -1140,7 +1140,7 @@ class MyWebSocket:
         self.getph=getph
         self.ws.on_open = self.on_open
 
-    def download_tar(url, filename):    
+    def download_tar(url, filename, tourStatus.task):    
         try:
             # 检查文件是否已存在
             if os.path.exists(filename):
@@ -1161,7 +1161,13 @@ class MyWebSocket:
 
             # 解压文件
             with tarfile.open(filename, 'r:gz') as tar:
-                tar.extractall(path='.../cameras/')  # 将文件解压到指定目录
+                tar.extractall(path='./cameras/')  # 将文件解压到指定目录
+
+            for extracted_file in os.listdir('./cameras/'):
+                old_path = os.path.join('./cameras/', extracted_file)
+                new_name = tourStatus.task
+                new_path = os.path.join('./cameras/', new_name)
+                os.rename('./cameras/', new_path)
 
             # 删除下载的 tar.gz 文件
             os.remove(filename)
@@ -1195,9 +1201,9 @@ class MyWebSocket:
                 # 创建线程对象
                 # tar.gz 文件的下载链接和本地保存路径
                 file_url = 'http://192.168.18.236:8000/TourReport/' + tourStatus.file
-                local_filename = '.../cameras/' + tourStatus.file
+                local_filename = './cameras/' + tourStatus.file
                 # print(file_url)
-                download_thread = threading.Thread(target=MyWebSocket.download_tar, args=(file_url, local_filename))
+                download_thread = threading.Thread(target=MyWebSocket.download_tar, args=(file_url, local_filename, tourStatus.task))
 
                 # 启动线程
                 download_thread.start()
